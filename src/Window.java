@@ -7,6 +7,8 @@ import java.io.File;
 import java.awt.event.ActionEvent;
 import javax.swing.SwingConstants;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import com.jgoodies.forms.factories.DefaultComponentFactory;
 import java.awt.Font;
 import javax.swing.JTextField;
@@ -114,6 +116,11 @@ public class Window implements ActionListener {
 		chckbxDeleteOriginals = new JCheckBox("Delete originals");
 		chckbxDeleteOriginals.setBounds(13, 220, 147, 23);
 		frame.getContentPane().add(chckbxDeleteOriginals);
+		
+	}
+	
+	public int showWarning(String warning){
+		return JOptionPane.showConfirmDialog(frame, warning, "Warning", JOptionPane.YES_NO_OPTION);
 	}
 
 	@Override

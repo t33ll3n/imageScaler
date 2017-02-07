@@ -3,11 +3,14 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.channels.ShutdownChannelGroupException;
+import java.nio.file.Files;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 public class Scaler {
 	Window window;
@@ -94,6 +97,13 @@ public class Scaler {
 	}
 
 	public String scaleImages() {
+		if (window.chckbxDeleteOriginals.isSelected()){
+			int reply = window.showWarning("Original images will be deleted. Do you want to proceed?");
+			if (reply == JOptionPane.NO_OPTION){
+				return imageArray.length + " images selected";
+			}
+		}
+		
 		JButton open = new JButton();
 		JFileChooser fc = new JFileChooser(); //initialize file chooser
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -118,6 +128,9 @@ public class Scaler {
 				
 				saveImage(image, name, i, dat); // save image
 			}
+			if (window.chckbxDeleteOriginals.isSelected()){
+				deleteOriginals();
+			}
 			return "Images scaled";
 		}
 		return " ";
@@ -125,6 +138,13 @@ public class Scaler {
 	
 	public void clearImageArray(){
 		imageArray = new File[0];
+	}
+	
+	public void deleteOriginals(){
+		for (int j = 0; j < imageArray.length; j++) {
+			imageArray[j].delete();
+		}
+		
 	}
 
 }
