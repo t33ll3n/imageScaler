@@ -1,0 +1,65 @@
+import java.awt.List;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
+import java.io.File;
+
+public class Drop implements DropTargetListener{
+	 private Scaler scaler;
+	
+	public Drop(Scaler scaler){
+		this.scaler = scaler;
+	}
+
+	@Override
+	public void dragEnter(DropTargetDragEvent dtde) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void dragExit(DropTargetEvent dte) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void dragOver(DropTargetDragEvent dd) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void drop(DropTargetDropEvent dd) {
+		
+		dd.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+		
+		Transferable t = dd.getTransferable();
+		
+		DataFlavor[] df = t.getTransferDataFlavors();
+		
+//		System.out.println(df);
+		
+		for (DataFlavor f : df){
+			try {
+				if (f.isFlavorJavaFileListType()){
+					java.util.List<File> files = (java.util.List<File>) t.getTransferData(f);
+//					System.out.println(files);
+					scaler.dropPhotos(files);
+				
+				}
+			} catch (Exception e) {
+				System.out.println(e);
+			}
+		}
+	}
+
+	@Override
+	public void dropActionChanged(DropTargetDragEvent dd) {
+		
+	}
+
+}

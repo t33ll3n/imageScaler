@@ -3,8 +3,8 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.channels.ShutdownChannelGroupException;
-import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
@@ -25,6 +25,11 @@ public class Scaler {
 	Scanner sc = new Scanner(System.in);
 	int dim1; //dimention 1
 	int dim2; //dimention 2
+	
+	public void dropPhotos(List<File> file){
+		imageArray = file.toArray(new File[file.size()]);
+		Arrays.sort(imageArray);
+	}
 
 	public int getPhotos() {
 		// Use filechooser to get images
@@ -36,7 +41,7 @@ public class Scaler {
 		}
 		
 		imageArray = fc.getSelectedFiles(); //get selected images and store them into an array
-		
+		Arrays.sort(imageArray);
 		return imageArray.length;
 
 	}

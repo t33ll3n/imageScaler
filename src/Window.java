@@ -11,6 +11,9 @@ import javax.swing.JOptionPane;
 
 //import com.jgoodies.forms.factories.DefaultComponentFactory;
 import java.awt.Font;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+
 import javax.swing.JTextField;
 import java.awt.Color;
 import javax.swing.JCheckBox;
@@ -39,6 +42,9 @@ public class Window implements ActionListener {
 		frame.setBounds(100, 100, 280, 376);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
+		
+		Drop drop = new Drop(scaler);
+		new DropTarget(frame, DnDConstants.ACTION_COPY, drop, true);
 		
 		JButton btnQuit = new JButton("Quit");
 		btnQuit.setBounds(165, 303, 89, 23);
