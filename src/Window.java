@@ -15,6 +15,8 @@ import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
 
 import javax.swing.JTextField;
+import javax.swing.UIManager;
+
 import java.awt.Color;
 import javax.swing.JCheckBox;
 
@@ -23,8 +25,8 @@ public class Window implements ActionListener {
 	private JFrame frame;
 	private JTextField width;
 	private JTextField height;
-	private JTextField name;
-	private JLabel seleced;
+	public JTextField name;
+	public JLabel seleced;
 	private JLabel lblError;
 	private Scaler scaler;
 	public JCheckBox chckbxSaveInFolders;
@@ -34,16 +36,17 @@ public class Window implements ActionListener {
 	public Window(Scaler scaler) {
 		this.scaler = scaler;
 		initialize();
+		setLookAndFeel();
 		frame.setVisible(true);
 	}
 
 	private void initialize() {
-		frame = new JFrame();
+		frame = new JFrame("Image Scaler");
 		frame.setBounds(100, 100, 280, 376);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		
-		Drop drop = new Drop(scaler);
+		Drop drop = new Drop(scaler, this);
 		new DropTarget(frame, DnDConstants.ACTION_COPY, drop, true);
 		
 		JButton btnQuit = new JButton("Quit");
@@ -123,6 +126,16 @@ public class Window implements ActionListener {
 		chckbxDeleteOriginals.setBounds(13, 220, 147, 23);
 		frame.getContentPane().add(chckbxDeleteOriginals);
 		
+	}
+	
+	private void setLookAndFeel(){
+		try {
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+		} catch (Exception e) {
+			// TODO: handle exception
+			//e.printStackTrace();
+			//ignore error. Default Java LookAndFeel
+		}
 	}
 	
 	public int showWarning(String warning){

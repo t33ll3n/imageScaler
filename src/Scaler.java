@@ -26,9 +26,11 @@ public class Scaler {
 	int dim1; //dimention 1
 	int dim2; //dimention 2
 	
-	public void dropPhotos(List<File> file){
+	public int dropPhotos(List<File> file){
 		imageArray = file.toArray(new File[file.size()]);
 		Arrays.sort(imageArray);
+		LCS(imageArray);
+		return imageArray.length;
 	}
 
 	public int getPhotos() {
@@ -42,6 +44,7 @@ public class Scaler {
 		
 		imageArray = fc.getSelectedFiles(); //get selected images and store them into an array
 		Arrays.sort(imageArray);
+		LCS(imageArray);
 		return imageArray.length;
 
 	}
@@ -151,5 +154,49 @@ public class Scaler {
 		}
 		
 	}
+	
+	private void LCS(File imageArray[]){
+		if (imageArray.length == 0){
+			return;
+		}
+		else if (imageArray.length == 1){
+			window.name.setText(imageArray[0] + "");
+			return;
+		}
+		String name = LongestCommonString(imageArray[0].getName(), imageArray[1].getName());
+		if (imageArray.length > 2){
+			for (int i = 2; i < imageArray.length; i++){
+				name = LongestCommonString(name, imageArray[i].getName());
+				//System.out.println("name:" + name);
+			}
+		}
+		name = name.replace(" ", "_").toLowerCase();
+		window.name.setText(name);
+	}
+	
+	public static String LongestCommonString(String prvi, String drugi){
+		 int[][] polje = new int[prvi.length()][drugi.length()];
+		 int longest = 0;
+		 String niz = "";
+		 
+		 for (int i = 0; i < prvi.length(); i++) {
+			for (int j = 0; j < drugi.length(); j++) {
+				if (prvi.charAt(i) == drugi.charAt(j)){
+					if (i == 0 || j == 0){
+						polje[i][j] = 1;
+					} else {
+						polje[i][j] = polje[i-1][j-1] + 1;
+					}
+					
+					if (polje[i][j] > longest){
+						longest = polje[i][j];
+						niz = prvi.substring(i-longest +1, i+1);
+					}
+				}
+			}
+		}
+		 
+		return niz;
+	 }
 
 }

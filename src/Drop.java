@@ -1,4 +1,3 @@
-import java.awt.List;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
@@ -10,9 +9,11 @@ import java.io.File;
 
 public class Drop implements DropTargetListener{
 	 private Scaler scaler;
+	 private Window window;
 	
-	public Drop(Scaler scaler){
+	public Drop(Scaler scaler, Window window){
 		this.scaler = scaler;
+		this.window = window;
 	}
 
 	@Override
@@ -48,7 +49,7 @@ public class Drop implements DropTargetListener{
 				if (f.isFlavorJavaFileListType()){
 					java.util.List<File> files = (java.util.List<File>) t.getTransferData(f);
 //					System.out.println(files);
-					scaler.dropPhotos(files);
+					window.seleced.setText(scaler.dropPhotos(files) + " images selected");
 				
 				}
 			} catch (Exception e) {
