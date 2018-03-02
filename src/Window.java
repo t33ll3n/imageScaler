@@ -19,6 +19,7 @@ import javax.swing.UIManager;
 
 import java.awt.Color;
 import javax.swing.JCheckBox;
+import javax.swing.JProgressBar;
 
 public class Window implements ActionListener {
 
@@ -28,13 +29,14 @@ public class Window implements ActionListener {
 	public JTextField name;
 	public JLabel seleced;
 	private JLabel lblError;
-	private Scaler scaler;
+	private Logic logic;
 	public JCheckBox chckbxSaveInFolders;
 	public JCheckBox chckbxDeleteOriginals;
+	private JProgressBar scalingProgressBar;
 
 
-	public Window(Scaler scaler) {
-		this.scaler = scaler;
+	public Window(Logic logic) {
+		this.logic = logic;
 		initialize();
 		setLookAndFeel();
 		frame.setVisible(true);
@@ -46,7 +48,7 @@ public class Window implements ActionListener {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		
-		Drop drop = new Drop(scaler, this);
+		Drop drop = new Drop(logic, this);
 		new DropTarget(frame, DnDConstants.ACTION_COPY, drop, true);
 		
 		JButton btnQuit = new JButton("Quit");
@@ -103,7 +105,7 @@ public class Window implements ActionListener {
 		
 		seleced = new JLabel("0 images selected");
 		seleced.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		seleced.setBounds(18, 50, 209, 23);
+		seleced.setBounds(23, 61, 209, 23);
 		frame.getContentPane().add(seleced);
 		
 		JButton btnNewButton = new JButton("X");
@@ -125,6 +127,12 @@ public class Window implements ActionListener {
 		chckbxDeleteOriginals = new JCheckBox("Delete originals");
 		chckbxDeleteOriginals.setBounds(13, 220, 147, 23);
 		frame.getContentPane().add(chckbxDeleteOriginals);
+		
+		scalingProgressBar = new JProgressBar(0, 100);
+		scalingProgressBar.setBounds(13, 60, 137, 27);
+		scalingProgressBar.setVisible(false);
+		scalingProgressBar.setStringPainted(true);
+		frame.getContentPane().add(scalingProgressBar);
 		
 	}
 	
@@ -148,25 +156,34 @@ public class Window implements ActionListener {
 		
 		if (btn.getText().equals("Quit")){
 			System.exit(0);
-		} else if (btn.getText().equals("X")) {
-			scaler.clearImageArray();
-			seleced.setText(scaler.imageArray.length + " images seleced!");
+		} 
+		else if (btn.getText().equals("X")) {
+			logic.clearImageArray();
+			scalingProgressBar.setVisible(false);
+			seleced.setText(logic.imageArray.length + " images seleced!");
 		}
 		else if (btn.getText().equals("Select Images")){
-			seleced.setText(scaler.getPhotos() + " images selected");
-		} else if (btn.getText().equals("Start scaling")){
-			seleced.setText(" ");
-			if (scaler.imageArray.length != 0){
-				if (!name.getText().equals("")){
+			seleced.setText(logic.getPhotos() + " images selected");
+			scalingProgressBar.setVisible(false);
+			seleced.setVisible(true);
+		} 
+		else if (btn.getText().equals("Start scaling")){
+			seleced.setVisible(false);
+			scalingProgressBar.setVisible(true);
+			
+			seleced.setText("");
+			if (logic.imageArray.length != 0){
+				if (!name.getText().trim().equals("")){
 					if (!height.getText().equals("")&&!width.getText().equals("")){
 						try {
-							scaler.dim2 = Integer.parseInt(height.getText());
-							scaler.dim1 = Integer.parseInt(width.getText());
-							scaler.name = name.getText();
+							logic.setDim2(Integer.parseInt(height.getText()));
+							logic.setDim1(Integer.parseInt(width.getText()));
+							logic.setName(name.getText());
 							
-							seleced.setText(scaler.scaleImages());
+							seleced.setText(logic.scaleImages());
 							lblError.setText("");
 						} catch (Exception ex) {
+							System.out.println(ex.getMessage());
 							lblError.setText("Invalid dimentions!");
 						}
 					} else {
@@ -183,5 +200,24 @@ public class Window implements ActionListener {
 			}
 			
 		}
+		//scalingProgressBar.setVisible(false);
+		//seleced.setVisible(true);
+	}
+	
+	public void setScalingProgressBar(int value){
+		scalingProgressBar.setValue(value);
+		scalingProgressBar.repaint(); 	
+	}
+	
+	public void incrementScalingProgressBar(int value){
+		System.out.println("Update progress");
+		int currValue = scalingProgressBar.getValue();
+		int newValue = currValue + value;
+		if (newValue > 100){
+			newValue = 100;
+		}
+		scalingProgressBar.setValue(newValue);
+		System.out.println("new value" + newValue);
+		scalingProgressBar.repaint();
 	}
 }

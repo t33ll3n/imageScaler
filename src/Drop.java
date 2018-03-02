@@ -8,11 +8,11 @@ import java.awt.dnd.DropTargetListener;
 import java.io.File;
 
 public class Drop implements DropTargetListener{
-	 private Scaler scaler;
+	 private Logic logic;
 	 private Window window;
 	
-	public Drop(Scaler scaler, Window window){
-		this.scaler = scaler;
+	public Drop(Logic logic, Window window){
+		this.logic = logic;
 		this.window = window;
 	}
 
@@ -49,7 +49,7 @@ public class Drop implements DropTargetListener{
 				if (f.isFlavorJavaFileListType()){
 					java.util.List<File> files = (java.util.List<File>) t.getTransferData(f);
 //					System.out.println(files);
-					window.seleced.setText(scaler.dropPhotos(files) + " images selected");
+					window.seleced.setText(logic.dropPhotos(files) + " images selected");
 				
 				}
 			} catch (Exception e) {
