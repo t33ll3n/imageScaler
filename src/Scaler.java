@@ -3,9 +3,16 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.stream.ImageInputStream;
 import javax.swing.SwingWorker;
+
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 public class Scaler extends SwingWorker<Integer, String> {
 
@@ -75,7 +82,7 @@ public class Scaler extends SwingWorker<Integer, String> {
 	private BufferedImage loadImage(File dat) { // argument dat contains path to image
 		BufferedImage img = null;
 		
-		//ExifData(dat);
+		ExifData(dat);
 
 		try {			
 			img = ImageIO.read(dat); // Loads image to memory
@@ -114,7 +121,65 @@ public class Scaler extends SwingWorker<Integer, String> {
 		for (int j = 0; j < imageArray.length; j++) {
 			imageArray[j].delete();
 		}
+	}
+	
+	public void ExifData(File dat) {
 		
+		//Does not provide all EXIF data
+		try {
+			ImageInputStream iis = ImageIO.createImageInputStream(dat);
+			Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
+
+			if (readers.hasNext()) {
+				ImageReader reader = readers.next();
+
+				reader.setInput(iis, true);
+
+				IIOMetadata metadata = reader.getImageMetadata(0);
+				String[] names = metadata.getMetadataFormatNames();
+
+				for (int i = 0; i < names.length; i++) {
+					System.out.println(names[i]);
+					displayMetaData(metadata.getAsTree(names[i]));
+				}
+			}
+
+		} catch (IOException e) {
+			// error code
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	private void displayMetaData(Node node){
+		displayMetaData(node, 0);
+	}
+	
+	private void displayMetaData(Node node, int level){
+		System.out.println(node.getNodeName());
+		NamedNodeMap map = node.getAttributes();
+		if (map != null){
+			//print attributes
+			for (int i = 0; i < map.getLength(); i++) {
+				Node attr = map.item(i);
+				System.out.println(attr.getNodeName() + ": " + attr.getNodeValue());
+			}
+		} else {
+			System.out.println("map is null");
+		}
+		
+		
+		Node child = node.getFirstChild();
+		
+		//no children
+		if (child == null){
+			return;
+		}
+		
+		while(child != null){
+			//display children
+			displayMetaData(child, level + 1);
+			child = child.getNextSibling();
+		}
 	}
 
 }
