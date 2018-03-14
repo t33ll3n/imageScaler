@@ -11,6 +11,13 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageInputStream;
 import javax.swing.SwingWorker;
 
+import org.apache.commons.imaging.ImageReadException;
+import org.apache.commons.imaging.Imaging;
+import org.apache.commons.imaging.common.IImageMetadata;
+import org.apache.commons.imaging.common.ImageMetadata;
+import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
+import org.apache.commons.imaging.formats.tiff.TiffField;
+import org.apache.commons.imaging.formats.tiff.constants.TiffTagConstants;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -22,7 +29,7 @@ public class Scaler extends SwingWorker<Integer, String> {
 	private int dim2;
 	private File dat;
 	private String name;
-	
+
 	public Scaler(File[] imageArray, Logic logic) {
 		this.imageArray = imageArray;
 		this.logic = logic;
@@ -36,12 +43,13 @@ public class Scaler extends SwingWorker<Integer, String> {
 	protected Integer doInBackground() throws Exception {
 
 		BufferedImage img;
-		
-		
+
 		for (int i = 0; i < imageArray.length; i++) {
-			
+
 			img = loadImage(imageArray[i]);
-			
+
+			System.out.println("Scaling");
+
 			int finalw = img.getWidth();
 			int finalh = img.getHeight();
 			double factor = 1.0d;
@@ -55,36 +63,46 @@ public class Scaler extends SwingWorker<Integer, String> {
 				finalh = (int) (finalh / factor);
 			}
 
-			BufferedImage resizedImg = new BufferedImage(finalw, finalh, img.getType()); //type has been changed
+			BufferedImage resizedImg = new BufferedImage(finalw, finalh, img.getType()); // type
+																							// has
+																							// been
+																							// changed
 			Graphics2D g2 = resizedImg.createGraphics();
 			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 			g2.drawImage(img, 0, 0, finalw, finalh, null);
 			g2.dispose();
 
-			
-			//saveIMage(resizedImg)
+			// saveIMage(resizedImg)
 			saveImage(resizedImg, name, i, dat);
-			
-			
-			
-			//set progress
+
+			// set progress
 			setProgress((i + 1) * 100 / imageArray.length);
-			//System.out.println((i + 1) * 100 / imageArray.length);
+			// System.out.println((i + 1) * 100 / imageArray.length);
 		}
-		
-		if (logic.getDelete()){
+
+		if (logic.getDelete()) {
 			deleteOriginals();
 		}
 
 		return 0;
 	}
-	
-	private BufferedImage loadImage(File dat) { // argument dat contains path to image
-		BufferedImage img = null;
-		
-		ExifData(dat);
 
-		try {			
+	private BufferedImage loadImage(File dat) { // argument dat contains path to
+												// image
+		BufferedImage img = null;
+
+		int orientation = -1;
+		try {
+			orientation = readExifData(dat);
+		} catch (ImageReadException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		try {
 			img = ImageIO.read(dat); // Loads image to memory
 		} catch (IOException e) {
 			// error code
@@ -92,94 +110,106 @@ public class Scaler extends SwingWorker<Integer, String> {
 			System.out.println(e.getMessage());
 		}
 
-		return img; // vrne sliko v main metodo
+		BufferedImage newImage = null;
+
+		if (orientation != -1) {
+			// rotate image
+
+			switch (orientation) {
+			case 6:
+				// rotate right for 90 degress
+				newImage = rotateRightFor90(img);
+				break;
+			case 8:
+				// rotate left for 90 degress
+				newImage = rotateLeftFor90(img);
+				break;
+			default:
+				newImage = img;
+			}
+
+		} else {
+			return img;
+		}
+
+		return newImage;
 	}
-	
+
 	private void saveImage(BufferedImage img, String imeSlike, int counter, File dat) {
 		counter += 1;
-		if (logic.getInFolder()){
+		if (logic.getInFolder()) {
 			dat = new File(dat + "\\" + imeSlike);
 			dat.mkdir();
 		}
-		if (counter < 10){
-			dat = new File(dat + "\\" + imeSlike + "0" + counter + ".JPG"); //creates path to image
-		}
-		else {
-			dat = new File(dat + "\\" +  imeSlike + counter + ".JPG");
+		if (counter < 10) {
+			dat = new File(dat + "\\" + imeSlike + "0" + counter + ".JPG"); // creates
+																			// path
+																			// to
+																			// image
+		} else {
+			dat = new File(dat + "\\" + imeSlike + counter + ".JPG");
 		}
 
 		try { // writes image
 			ImageIO.write(img, "jpg", dat); // saves image
 		} catch (IOException e) {
-			//error code
+			// error code
 			System.out.println("Issues saving image!");
 			System.out.println(e.getMessage());
 		}
 	}
-	
-	private void deleteOriginals(){
+
+	private void deleteOriginals() {
 		for (int j = 0; j < imageArray.length; j++) {
 			imageArray[j].delete();
 		}
 	}
-	
-	public void ExifData(File dat) {
-		
-		//Does not provide all EXIF data
-		try {
-			ImageInputStream iis = ImageIO.createImageInputStream(dat);
-			Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
 
-			if (readers.hasNext()) {
-				ImageReader reader = readers.next();
+	private int readExifData(File file) throws ImageReadException, IOException {
 
-				reader.setInput(iis, true);
+		System.out.println("readEXIF");
 
-				IIOMetadata metadata = reader.getImageMetadata(0);
-				String[] names = metadata.getMetadataFormatNames();
+		IImageMetadata metadata = Imaging.getMetadata(file);
 
-				for (int i = 0; i < names.length; i++) {
-					System.out.println(names[i]);
-					displayMetaData(metadata.getAsTree(names[i]));
-				}
-			}
-
-		} catch (IOException e) {
-			// error code
-			System.out.println(e.getMessage());
+		if (!(metadata instanceof JpegImageMetadata)) {
+			throw new RuntimeException("Support only " + JpegImageMetadata.class.getSimpleName());
 		}
-	}
-	
-	private void displayMetaData(Node node){
-		displayMetaData(node, 0);
-	}
-	
-	private void displayMetaData(Node node, int level){
-		System.out.println(node.getNodeName());
-		NamedNodeMap map = node.getAttributes();
-		if (map != null){
-			//print attributes
-			for (int i = 0; i < map.getLength(); i++) {
-				Node attr = map.item(i);
-				System.out.println(attr.getNodeName() + ": " + attr.getNodeValue());
-			}
+		// Only jpeg images goes throw
+		final JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
+
+		TiffField field = jpegMetadata.findEXIFValueWithExactMatch(TiffTagConstants.TIFF_TAG_ORIENTATION);
+		if (field != null) {
+			System.out.println(field.getValueDescription());
+			return Integer.parseInt(field.getValueDescription());
 		} else {
-			System.out.println("map is null");
+			System.out.println("Filed is null");
+			return -1;
 		}
-		
-		
-		Node child = node.getFirstChild();
-		
-		//no children
-		if (child == null){
-			return;
+
+	}
+
+	private BufferedImage rotateRightFor90(BufferedImage img) {
+		BufferedImage newImage = new BufferedImage(img.getHeight(), img.getWidth(), img.getType());
+
+		for (int i = 0; i < img.getHeight(); i++) {
+			for (int j = 0; j < img.getWidth(); j++) {
+				newImage.setRGB(i, j, img.getRGB(j, i));
+			}
 		}
-		
-		while(child != null){
-			//display children
-			displayMetaData(child, level + 1);
-			child = child.getNextSibling();
+
+		return newImage;
+	}
+
+	private BufferedImage rotateLeftFor90(BufferedImage img) {
+		BufferedImage newImage = new BufferedImage(img.getHeight(), img.getWidth(), img.getType());
+
+		for (int i = 0; i < img.getHeight(); i++) {
+			for (int j = 0; j < img.getWidth(); j++) {
+				newImage.setRGB(i, (img.getWidth() - 1 - j), img.getRGB(j, i));
+			}
 		}
+
+		return newImage;
 	}
 
 }

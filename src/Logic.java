@@ -167,30 +167,6 @@ public class Logic {
 		return niz;
 	}
 
-//	public void ExifData(File dat) {
-//		try {
-//			ImageInputStream iis = ImageIO.createImageInputStream(dat);
-//			Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
-//
-//			if (readers.hasNext()) {
-//				ImageReader reader = readers.next();
-//
-//				reader.setInput(iis, true);
-//
-//				IIOMetadata metadata = reader.getImageMetadata(0);
-//				String[] names = metadata.getMetadataFormatNames();
-//
-//				for (int i = 0; i < names.length; i++) {
-//					System.out.println(names[i]);
-//				}
-//			}
-//
-//		} catch (IOException e) {
-//			// error code
-//			System.out.println(e.getMessage());
-//		}
-//	}
-
 	public int getDim1() {
 		return dim1;
 	}
