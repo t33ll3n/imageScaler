@@ -18,8 +18,10 @@ import org.apache.commons.imaging.common.ImageMetadata;
 import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
 import org.apache.commons.imaging.formats.tiff.TiffField;
 import org.apache.commons.imaging.formats.tiff.constants.TiffTagConstants;
-import org.w3c.dom.NamedNodeMap;
+//import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+
+
 
 public class Scaler extends SwingWorker<Integer, String> {
 
@@ -170,6 +172,10 @@ public class Scaler extends SwingWorker<Integer, String> {
 		System.out.println("readEXIF");
 
 		IImageMetadata metadata = Imaging.getMetadata(file);
+		
+		if (metadata == null) {
+			return -1;
+		}
 
 		if (!(metadata instanceof JpegImageMetadata)) {
 			throw new RuntimeException("Support only " + JpegImageMetadata.class.getSimpleName());
@@ -179,7 +185,7 @@ public class Scaler extends SwingWorker<Integer, String> {
 
 		TiffField field = jpegMetadata.findEXIFValueWithExactMatch(TiffTagConstants.TIFF_TAG_ORIENTATION);
 		if (field != null) {
-			System.out.println(field.getValueDescription());
+			System.out.println("filed" + field.getValueDescription());
 			return Integer.parseInt(field.getValueDescription());
 		} else {
 			System.out.println("Filed is null");
